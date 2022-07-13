@@ -1,0 +1,11 @@
+.idea
+.git
+.tmp.*
+backup
+data
+doc
+log
+setup
+.gitignore
+*.Dockerfile
+*.exe
