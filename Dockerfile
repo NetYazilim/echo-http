@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine AS builder
+FROM golang:1.19-alpine AS builder
 ENV GO111MODULE=on
 RUN apk --update upgrade \
     && apk --no-cache --no-progress add git ca-certificates libcap \
@@ -25,7 +25,7 @@ ENTRYPOINT ["/echohttp"]
 # cap_net_bind_service çalışması için app klasör içinde olmalı, klasör kopyalanmalı.
 # https://medium.com/elbstack/docker-go-and-privileged-ports-d6354db472c3
 
-# docker build -t netyazilim/echohttp:0.1.0 -f Dockerfile .
+# docker build -t netyazilim/echo-http:1.1.0 -f Dockerfile .
 
 
 

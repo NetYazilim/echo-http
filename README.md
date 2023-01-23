@@ -2,5 +2,5 @@
 
 
 ````
- docker run  netyazilim/echohttp:0.1.0 -p 8080:8080
+ docker run -p 8080:8080 -e ECHO_HTTP_PORT=8080 -e ECHO_HTTP_ROOT=/www netyazilim/echo-http:latest
 ````

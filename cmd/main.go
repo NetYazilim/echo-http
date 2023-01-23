@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/coocood/freecache"
 	"github.com/cristalhq/aconfig"
 	"github.com/cristalhq/aconfig/aconfigdotenv"
@@ -8,16 +9,19 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog"
-	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 type Config struct {
-	Port string `env:"FIBER_HTTP_PORT"`
-	Root string `env:"FIBER_HTTP_ROOT"`
+	Port string `env:"ECHO_HTTP_PORT"`
+	Root string `env:"ECHO_HTTP_ROOT"`
 }
 
-var Version string = "0.1.0"
+var Version string = "1.1.0"
 
 var err error
 
@@ -30,7 +34,7 @@ func main() {
 		AllowUnknownEnvs:   true,
 		AllowUnknownFields: true,
 		SkipEnv:            false,
-		//	EnvPrefix:          "FIBERHTTP",
+		//	EnvPrefix:          "ECHO_HTTP",
 		FileDecoders: map[string]aconfig.FileDecoder{
 			".env": aconfigdotenv.New(),
 		},
@@ -83,6 +87,22 @@ func main() {
 		},
 	}))
 	app.Use(middleware.Static(Cfg.Root))
+	// Start server
+	go func() {
+		if err := app.Start(":" + Cfg.Port); err != nil && err != http.ErrServerClosed {
+			logger.Fatal().Msg("shutting down the server")
+		}
+	}()
+	quit := make(chan os.Signal, 2)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Fatal(app.Start(":" + Cfg.Port))
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	logger.Fatal().Msg("Graceful shutdown ...")
+
+	if err := app.Shutdown(ctx); err != nil {
+		logger.Fatal().Msg(err.Error())
+	}
+
 }
